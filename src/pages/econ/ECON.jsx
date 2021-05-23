@@ -5,15 +5,20 @@ import { MAX_YEAR, MIN_YEAR, yearLegend } from "./model/yearLegend";
 import * as ECONServ from "./service/ECON.service";
 import worldmapJson from "../../data/map/world_topomap_mid.json";
 import populationCSV from "../../data/econ/population_1960-2019.csv";
+import { drawColorLegend } from "./components/populationLegend";
+import { countryList } from "./model/countryList";
+import * as perCapitaComponent from "./components/perCapita";
 import { Slider } from "@material-ui/core";
-import { rgb } from "d3";
+import { CAPITA } from "./components/CAPITA";
 
 export const ECON = () => {
   const [year, setYear] = useState(d3.max(yearLegend()));
+  const [countries, setCountries] = useState([]);
   const margin = { top: 50, left: 50, right: 50, bottom: 50 };
   const height = 760 - margin.top - margin.bottom + 400;
   const width = 2160 - margin.left - margin.right;
-  const svgRef = useRef();
+  const worldMapRef = useRef();
+  const perCapitalLineChartRef = useRef();
 
   //sliber mark
   const sliberMark = () => {
@@ -27,19 +32,24 @@ export const ECON = () => {
   };
 
   //slider onChange event
-  const changeMapYear = (e, number) => {
+  const changeMapYear = async (e, number) => {
     setYear(number);
   };
 
   useEffect(async () => {
+    //load countries
+    setCountries(await countryList());
+
     //load population
     let population = await ECONServ.populationStringToInt(populationCSV);
 
     //map population into worldmap data
     const worldMapData = await ECONServ.populationMap(population, worldmapJson);
-    console.log(worldMapData);
-    const svg = d3
-      .select(svgRef.current)
+    // console.log(worldMapData);
+
+    //init svg
+    const worldMapSVG = d3
+      .select(worldMapRef.current)
       .attr("width", width)
       .attr("height", height)
       .style("background-color", "#F6F6F6");
@@ -63,7 +73,10 @@ export const ECON = () => {
     const myColor = d3
       .scaleLinear()
       .domain([10000, 1400000000])
-      .range(["rgb(252, 233, 232)", "rgb(94, 2, 0)"]);
+      .range(["rgb(252, 233, 232)", "rgb(94, 2, 0)"])
+      .interpolate(d3.interpolateLab);
+
+    //color legend
 
     //fill color
     const fillColor = (d) => {
@@ -100,8 +113,20 @@ export const ECON = () => {
 
     const bodyNode = d3.select("body").node();
 
+    //draw title
+    worldMapSVG
+      .append("text")
+      .attr("class", "title")
+      .attr("x", width / 2)
+      .attr("y", margin.top + 20)
+      .attr("text-anchor", "middle")
+      .style("position", "absolute")
+      .style("font", "40px sans-serif")
+      .style("font-weight", "bold")
+      .text(`World Population`);
+
     //draw map
-    svg
+    worldMapSVG
       .selectAll(".country")
       .data(worldmap)
       .join("path")
@@ -113,22 +138,34 @@ export const ECON = () => {
         d3.selectAll(".tooltip").remove();
         let position = d3.pointer(e, bodyNode);
         tooltipDiv(position, d);
+      })
+      .on("mouseout", (e, d) => {
+        d3.selectAll(".tooltip").remove();
       });
+
+    //draw legend
+    drawColorLegend(worldMapSVG);
+
+    //draw line chart
+    perCapitaComponent.drawLineChart(perCapitalLineChartRef);
   }, [year]);
 
   return (
     <div>
-      <svg ref={svgRef}></svg>
-      <Slider
-        defaultValue={MAX_YEAR}
-        min={MIN_YEAR}
-        max={MAX_YEAR}
-        step={1}
-        valueLabelDisplay="on"
-        marks={sliberMark()}
-        onChange={changeMapYear}
-        style={{ width: "1000px" }}
-      />
+      <div>
+        <svg ref={worldMapRef}></svg>
+        <Slider
+          defaultValue={MAX_YEAR}
+          min={MIN_YEAR}
+          max={MAX_YEAR}
+          step={1}
+          valueLabelDisplay="on"
+          marks={sliberMark()}
+          onChange={changeMapYear}
+          style={{ width: "1000px" }}
+        />
+      </div>
+      <CAPITA countries={countries} />
     </div>
   );
 };
