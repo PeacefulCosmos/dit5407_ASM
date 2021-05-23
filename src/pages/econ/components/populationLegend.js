@@ -6,7 +6,7 @@ const width = 20;
 
 export const drawColorLegend = (svg) => {
   const y = d3.scaleLinear().range([500, 0]).domain([0, 1400000000]);
-
+  d3.selectAll(".legend").remove();
   d3.select(".y-axis").remove();
 
   const yAxis = d3
@@ -14,10 +14,14 @@ export const drawColorLegend = (svg) => {
     .scale(y)
     .ticks(10)
     .tickFormat((number) => {
-      return `${number / 10000000}M`;
+      return `${number / 1000000000}`;
     });
 
-  const appendLegend = svg.append("svg").attr("width", 100).attr("height", 900);
+  const appendLegend = svg
+    .append("svg")
+    .attr("class", "legend")
+    .attr("width", 100)
+    .attr("height", 900);
 
   const grad = appendLegend
     .append("defs")
@@ -43,7 +47,7 @@ export const drawColorLegend = (svg) => {
   appendLegend
     .append("rect")
     .attr("id", "population-legend")
-    .attr("x", 50)
+    .attr("x", 30)
     .attr("y", 60)
     .attr("width", width)
     .attr("height", height)
@@ -52,16 +56,20 @@ export const drawColorLegend = (svg) => {
   appendLegend
     .append("g")
     .attr("class", "y-axis")
-    .attr("transform", `translate(50, 60)`)
-    .call(yAxis)
+    .attr("transform", `translate(30, 60)`)
+    .call(yAxis);
+
+  appendLegend
     .append("text")
+    .attr("class", "unit")
+    .attr("x", -50)
+    .attr("y", 30 * 2)
     .attr("transform", "rotate(-90)")
-    .attr("y", 6)
     .attr("dy", ".71em")
     .style("text-anchor", "end")
     .style("z-index", 1)
     .style("position", "absolute")
-    .text("million people");
+    .text("billion");
 
   return appendLegend;
 };

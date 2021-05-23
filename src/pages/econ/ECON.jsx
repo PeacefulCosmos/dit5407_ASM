@@ -37,6 +37,7 @@ export const ECON = () => {
   };
 
   useEffect(async () => {
+    d3.selectAll();
     //load countries
     setCountries(await countryList());
 
@@ -115,8 +116,8 @@ export const ECON = () => {
 
     //draw title
     worldMapSVG
-      .append("text")
-      .attr("class", "title")
+      .select(".title")
+      // .attr("class", "title")
       .attr("x", width / 2)
       .attr("y", margin.top + 20)
       .attr("text-anchor", "middle")
@@ -153,7 +154,9 @@ export const ECON = () => {
   return (
     <div>
       <div>
-        <svg ref={worldMapRef}></svg>
+        <svg ref={worldMapRef}>
+          <text className="title"></text>
+        </svg>
         <Slider
           defaultValue={MAX_YEAR}
           min={MIN_YEAR}

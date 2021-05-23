@@ -35,7 +35,7 @@ export const CAPITA = ({ countries }) => {
   };
 
   useEffect(async () => {
-    d3.select(".chart_group").remove();
+    d3.selectAll(".chart_group").remove();
     setCountriesState(countries);
 
     //load data
