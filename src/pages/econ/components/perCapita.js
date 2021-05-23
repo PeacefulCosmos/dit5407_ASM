@@ -17,5 +17,5 @@ export const drawLineChart = async (svgRef, choice1, choice2) => {
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   const perCapitaData = await d3.csv(perCapitaCSV);
-  console.log(perCapitaData);
+  // console.log(perCapitaData);
 };

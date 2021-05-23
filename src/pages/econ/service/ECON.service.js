@@ -43,5 +43,6 @@ export const loadPerCapitaData = async () => {
     data.push(set);
     set = {};
   });
+  console.log(rawData);
   return data;
 };
